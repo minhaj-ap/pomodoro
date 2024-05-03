@@ -1,4 +1,17 @@
 import { useState, useEffect } from "react";
+import {
+  Box,
+  AppBar,
+  Typography,
+  Toolbar,
+  TextField,
+  FormControl,
+  Stack,
+  Button,
+  Grid,
+  Alert,
+  Popover,
+} from "@mui/material";
 export default function Countdown() {
   const [minute, setMinute] = useState();
   const [second, setSecond] = useState();
@@ -7,10 +20,11 @@ export default function Countdown() {
   const [BreakFreq, setBreakFreq] = useState(0);
   const [longBreak, setLongBreak] = useState(false);
   const [run, setRun] = useState(false);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("TIMER NOT STARTED");
   const [breakNeed, setBreakNeed] = useState(true);
   const [longBreakNeed, setLongBreakNeed] = useState(true);
   const [sessions, setSessions] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
   useEffect(() => {
     if (BreakFreq % 5 === 0 && BreakFreq !== 0) {
       setBreakFreq(0);
@@ -57,7 +71,7 @@ export default function Countdown() {
     }
     if (Break) {
       setStatus("BREAK OF 5 MINS RUNNING");
-      setTime({ minutes: 0, seconds: 3 });
+      setTime({ minutes: 1, seconds: 0 });
       setRun(true);
       setBreakFreq((freq) => freq + 1);
     }
@@ -68,7 +82,7 @@ export default function Countdown() {
       setBreakNeed(false);
       console.log("Long break started");
       setStatus("Long break started");
-      setTime({ minutes: 0, seconds: 10 });
+      setTime({ minutes: 3, seconds: 0 });
       setRun(true);
     }
   }, [longBreak]);
@@ -99,6 +113,10 @@ export default function Countdown() {
     setRun(true);
   };
   const handleReset = () => {
+    setMinute(0);
+    setSecond(0);
+    setSessions(0);
+    setStatus("NOT STARTED");
     setTime({ minutes: 0, seconds: 0 });
     setRun(false);
   };
@@ -106,45 +124,152 @@ export default function Countdown() {
     setRun(true);
     setBreak(true);
   };
+  const handleLongBreak = () => {
+    setLongBreak(true);
+  };
   const handleBreakNeed = () => {
     console.log("break need triggered");
     setBreakNeed((prevStatus) => !prevStatus);
   };
-  const handleLongBreak = () => {
+  const handleLongBreakNeed = () => {
     setLongBreakNeed(false);
   };
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
-    <main>
-      <input value={minute} onChange={handleMinute} />
-      <input value={second} onChange={handleSecond} />
-      <button onClick={handleStart}>{run ? "Restart" : "Start"}</button>
-      {run ? (
-        <button onClick={handlePause}>Pause</button>
-      ) : (
-        <button onClick={handleResume}>Resume</button>
-      )}
-      <button onClick={handleReset}>Reset</button>
-      <button onClick={handleBreak}>Break</button>
-      {time.seconds ? <p>{time.minutes + ":" + time.seconds}</p> : ""}
+    <Box>
+      <AppBar position="static" color="primary">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
+            POMODORO TIMER
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <form>
+        <FormControl>
+          <Grid
+            container
+            spacing={2}
+            sx={{ marginTop: "16px" }}
+            justifyContent="center"
+          >
+            <Grid item>
+              <TextField
+                id=""
+                label="Enter minutes"
+                value={minute}
+                onChange={handleMinute}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                id=""
+                label="Enter seconds"
+                value={second}
+                onChange={handleSecond}
+              />
+            </Grid>
+          </Grid>
+        </FormControl>
+      </form>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ margin: "12px" }}
+        justifyContent="center"
+      >
+        <Button variant="contained" onClick={handleStart}>
+          {run ? "Restart" : "Start"}
+        </Button>
+        <Button variant="contained" onClick={run ? handlePause : handleResume}>
+          {run ? "Pause" : "Resume"}
+        </Button>
+        <Button variant="contained" disabled={!run} onClick={handleReset}>
+          Reset
+        </Button>
+      </Stack>
+      <Stack
+        direction="column"
+        spacing={2}
+        sx={{ marginX: "40px" }}
+        justifyContent="center"
+      >
+        <Button variant="outlined" onClick={handleBreak}>
+          Break
+        </Button>
+        <Button variant="outlined" onClick={handleLongBreak}>
+          Long Break
+        </Button>
+      </Stack>
+      <Typography variant="h4">Timer:</Typography>
+      <Typography variant="h2">{time.minutes + ":" + time.seconds}</Typography>
       {status === "TIMER RUNNING" &&
         time.seconds < 5 &&
         breakNeed &&
         BreakFreq < 4 && (
-          <div>
-            proceeding to short break in {time.seconds}
-            <button onClick={handleBreakNeed}>Cancel</button>
-          </div>
+          <Alert
+            severity="warning"
+            action={
+              <Button onClick={handleBreakNeed} color="inherit" size="small">
+                Cancel
+              </Button>
+            }
+          >
+            Proceeding to short break in {time.seconds}
+          </Alert>
         )}
-      {status === "TIMER RUNNING" && BreakFreq >= 4 && (
-        <div>
-          proceeding to long break in {time.seconds}
-          <button onClick={handleLongBreak}>Cancel</button>
-        </div>
+      {status === "TIMER RUNNING" && longBreakNeed && BreakFreq >= 4 && (
+        <Alert
+          severity="warning"
+          action={
+            <Button onClick={handleLongBreakNeed} color="inherit" size="small">
+              CANCEL
+            </Button>
+          }
+        >
+          Proceeding to long break in {time.seconds}
+        </Alert>
       )}
       <br />
-      {status && <p>status: {status}</p>}
-      {BreakFreq > 0 && <p>total breaks:{BreakFreq}</p>}
+      <Typography variant="caption" color="initial">
+        Status: {status}
+      </Typography>
+      <Typography variant="subtitle1" color="initial">
+        Total breaks:{BreakFreq}
+      </Typography>
       Total sessions:{sessions}
-    </main>
+      <br />
+      <Button
+        variant="contained"
+        onClick={handleClick}
+        sx={{ marginTop: "10px" }}
+      >
+        KNOW HOW THIS WORKS.
+      </Button>
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <Typography sx={{ p: 2 }}>
+          Each timer will be for 5 mins and it is followed by a 1 min short
+          break, by achieving 4 short breaks ,after the next timer will be a
+          long break for 3 mins.This is considered as one session.
+        </Typography>
+      </Popover>
+    </Box>
   );
 }
