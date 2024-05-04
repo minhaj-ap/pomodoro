@@ -71,7 +71,7 @@ export default function Countdown() {
     }
     if (Break) {
       setStatus("BREAK OF 1 MINS RUNNING");
-      setTime({ minutes: 0, seconds: 2 });
+      setTime({ minutes: 1, seconds: 0 });
       setRun(true);
       setBreakFreq((freq) => freq + 1);
     }
