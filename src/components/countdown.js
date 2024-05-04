@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Box,
   AppBar,
   Typography,
   Toolbar,
@@ -36,9 +35,9 @@ export default function Countdown() {
       timer = setInterval(() => {
         setTime((prevTime) => {
           if (Break) {
-            setStatus("BREAK OF 5 MINS RUNNING");
+            setStatus("BREAK OF 1 MINS RUNNING");
           } else if (longBreak) {
-            setStatus("Long break started");
+            setStatus("BREAK OF 3 MINS ONGOING");
           } else {
             setStatus("TIMER RUNNING");
           }
@@ -47,10 +46,11 @@ export default function Countdown() {
             if (!Break && longBreakNeed && BreakFreq >= 4) {
               setLongBreak(true);
             }
+            console.log(breakNeed);
             if (breakNeed) {
               setBreak(true);
             }
-            setStatus("");
+            setStatus("TIMER NOT STARTED");
             setRun(false);
             return prevTime;
           } else if (prevTime.seconds === 0) {
@@ -70,8 +70,8 @@ export default function Countdown() {
       return;
     }
     if (Break) {
-      setStatus("BREAK OF 5 MINS RUNNING");
-      setTime({ minutes: 1, seconds: 0 });
+      setStatus("BREAK OF 1 MINS RUNNING");
+      setTime({ minutes: 0, seconds: 2 });
       setRun(true);
       setBreakFreq((freq) => freq + 1);
     }
@@ -79,10 +79,10 @@ export default function Countdown() {
   useEffect(() => {
     if (longBreak) {
       setBreak(false);
-      setBreakNeed(false);
       console.log("Long break started");
-      setStatus("Long break started");
+      setStatus("BREAK OF 3 MINS ONGOING");
       setTime({ minutes: 3, seconds: 0 });
+      setBreakNeed(false);
       setRun(true);
     }
   }, [longBreak]);
@@ -132,7 +132,9 @@ export default function Countdown() {
     setBreakNeed((prevStatus) => !prevStatus);
   };
   const handleLongBreakNeed = () => {
+    setBreakFreq((freq) => freq + 1);
     setLongBreakNeed(false);
+    setBreakNeed(false);
   };
 
   const handleClick = (event) => {
@@ -146,7 +148,7 @@ export default function Countdown() {
   const open = Boolean(anchorEl);
 
   return (
-    <Box>
+    <Grid container direction="column" alignItems="center">
       <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
@@ -154,12 +156,14 @@ export default function Countdown() {
           </Typography>
         </Toolbar>
       </AppBar>
+      <Typography variant="h4">Timer:</Typography>
+      <Typography variant="h2">{time.minutes + ":" + time.seconds}</Typography>
       <form>
         <FormControl>
           <Grid
             container
             spacing={2}
-            sx={{ marginTop: "16px" }}
+            direction="column"
             justifyContent="center"
           >
             <Grid item>
@@ -206,12 +210,14 @@ export default function Countdown() {
         <Button variant="outlined" onClick={handleBreak}>
           Break
         </Button>
-        <Button variant="outlined" onClick={handleLongBreak}>
+        <Button
+          variant="outlined"
+          disabled={sessions <= 0}
+          onClick={handleLongBreak}
+        >
           Long Break
         </Button>
       </Stack>
-      <Typography variant="h4">Timer:</Typography>
-      <Typography variant="h2">{time.minutes + ":" + time.seconds}</Typography>
       {status === "TIMER RUNNING" &&
         time.seconds < 5 &&
         breakNeed &&
@@ -270,6 +276,6 @@ export default function Countdown() {
           long break for 3 mins.This is considered as one session.
         </Typography>
       </Popover>
-    </Box>
+    </Grid>
   );
 }
