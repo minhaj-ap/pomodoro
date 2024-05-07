@@ -1,20 +1,35 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import StatusChooser from "./sub-functions/status_chooser";
 import Timer from "./sub-functions/timer";
 import TimerUi from "./ui/TimerUi";
+import { useStates } from "./handlers/StateHandlers";
 export default function Countdown() {
-  const [minute, setMinute] = useState(0);
-  const [second, setSecond] = useState(0);
-  const [time, setTime] = useState({ minutes: 0, seconds: 0 });
-  const [Break, setBreak] = useState(false);
-  const [BreakFreq, setBreakFreq] = useState(0);
-  const [longBreak, setLongBreak] = useState(false);
-  const [run, setRun] = useState(false);
-  const [status, setStatus] = useState("TIMER NOT STARTED");
-  const [breakNeed, setBreakNeed] = useState(true);
-  const [longBreakNeed, setLongBreakNeed] = useState(true);
-  const [sessions, setSessions] = useState(0);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const {
+    minute,
+    setMinute,
+    second,
+    setSecond,
+    time,
+    setTime,
+    Break,
+    setBreak,
+    BreakFreq,
+    setBreakFreq,
+    longBreak,
+    setLongBreak,
+    run,
+    setRun,
+    status,
+    setStatus,
+    breakNeed,
+    setBreakNeed,
+    longBreakNeed,
+    setLongBreakNeed,
+    sessions,
+    setSessions,
+    anchorEl,
+    setAnchorEl,
+  } = useStates();
   useEffect(() => {
     if (BreakFreq % 5 === 0 && BreakFreq !== 0) {
       setBreakFreq(0);
@@ -45,7 +60,21 @@ export default function Countdown() {
       clearInterval(timer);
     }
     return () => clearInterval(timer);
-  }, [run, Break, breakNeed, longBreak, longBreakNeed, BreakFreq]);
+  }, [
+    run,
+    Break,
+    breakNeed,
+    longBreak,
+    longBreakNeed,
+    BreakFreq,
+    setBreakFreq,
+    setSessions,
+    setTime,
+    setStatus,
+    setRun,
+    setLongBreak,
+    setBreak,
+  ]);
   useEffect(() => {
     if (!Break) {
       return;
@@ -56,7 +85,7 @@ export default function Countdown() {
       setRun(true);
       setBreakFreq((freq) => freq + 1);
     }
-  }, [Break, longBreakNeed]);
+  }, [Break, longBreakNeed, setBreakFreq, setRun, setStatus, setTime]);
   useEffect(() => {
     if (longBreak) {
       setBreak(false);
@@ -66,14 +95,19 @@ export default function Countdown() {
       setBreakNeed(false);
       setRun(true);
     }
-  }, [longBreak]);
+  }, [longBreak, setBreak, setBreakNeed, setRun, setStatus, setTime]);
   const handleMinute = (data) => {
     setMinute(data);
   };
   const handleSecond = (data) => {
+    console.log(data);
     setSecond(data);
   };
-  const handleStart = () => {
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleStart = (second, minute) => {
+    console.log(second);
     setLongBreak(false);
     setBreak(false);
     setLongBreakNeed(true);
@@ -88,6 +122,7 @@ export default function Countdown() {
     setRun(true);
   };
   const handlePause = () => {
+    console.log("triggered");
     setRun(false);
   };
   const handleResume = () => {
@@ -116,11 +151,6 @@ export default function Countdown() {
     setLongBreakNeed(false);
     setBreakNeed(false);
   };
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -137,7 +167,7 @@ export default function Countdown() {
         secondvalue: second,
       }}
       run={run}
-      handlestart={handleStart}
+      handlestart={() => handleStart(second, minute)}
       handlepause={handlePause}
       handleresume={handleResume}
       handlereset={handleReset}
